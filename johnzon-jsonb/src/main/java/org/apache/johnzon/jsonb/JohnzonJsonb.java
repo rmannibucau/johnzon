@@ -38,7 +38,6 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 
-// TODO: Optional handling for lists (and arrays)?
 public class JohnzonJsonb implements Jsonb, AutoCloseable {
     private final Mapper delegate;
 
@@ -231,37 +230,37 @@ public class JohnzonJsonb implements Jsonb, AutoCloseable {
             }
         } else if (double.class == componentType) {
             final int length = Array.getLength(object);
-            array = new Integer[length];
+            array = new Double[length];
             for (int i = 0; i < length; i++) {
                 array[i] = Array.getDouble(object, i);
             }
         } else if (byte.class == componentType) {
             final int length = Array.getLength(object);
-            array = new Integer[length];
+            array = new Byte[length];
             for (int i = 0; i < length; i++) {
                 array[i] = Array.getByte(object, i);
             }
         } else if (char.class == componentType) {
             final int length = Array.getLength(object);
-            array = new Integer[length];
+            array = new Character[length];
             for (int i = 0; i < length; i++) {
                 array[i] = Array.getChar(object, i);
             }
         } else if (float.class == componentType) {
             final int length = Array.getLength(object);
-            array = new Integer[length];
+            array = new Float[length];
             for (int i = 0; i < length; i++) {
                 array[i] = Array.getFloat(object, i);
             }
         } else if (long.class == componentType) {
             final int length = Array.getLength(object);
-            array = new Integer[length];
+            array = new Long[length];
             for (int i = 0; i < length; i++) {
                 array[i] = Array.getLong(object, i);
             }
         } else if (short.class == componentType) {
             final int length = Array.getLength(object);
-            array = new Integer[length];
+            array = new Short[length];
             for (int i = 0; i < length; i++) {
                 array[i] = Array.getShort(object, i);
             }

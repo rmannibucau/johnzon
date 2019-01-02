@@ -145,21 +145,7 @@ public class MappingParserImpl implements MappingParser {
         }
         if (JsonNumber.class.isInstance(jsonValue)) {
             final JsonNumber number = JsonNumber.class.cast(jsonValue);
-            if (targetType == int.class || targetType == Integer.class) {
-                return (T) Integer.valueOf(number.intValue());
-            }
-            if (targetType == long.class || targetType == Long.class) {
-                return (T) Long.valueOf(number.longValue());
-            }
-            if (targetType == double.class || targetType == Double.class || targetType == Object.class) {
-                return (T) Double.valueOf(number.doubleValue());
-            }
-            if (targetType == BigDecimal.class) {
-                return (T) number.bigDecimalValue();
-            }
-            if (targetType == BigInteger.class) {
-                return (T) number.bigIntegerValue();
-            }
+            return (T) mapNumber(number, targetType);
         }
         if (JsonArray.class.isInstance(jsonValue)) {
 
@@ -544,56 +530,7 @@ public class MappingParserImpl implements MappingParser {
             }
             return buildArray(type, JsonArray.class.cast(jsonValue), itemConverter, null, jsonPointer, rootType);
         } else if (JsonNumber.class.isInstance(jsonValue)) {
-            if (JsonNumber.class == type) {
-                return jsonValue;
-            }
-
-            final JsonNumber number = JsonNumber.class.cast(jsonValue);
-
-            if (type == Long.class || type == long.class) {
-                return number.longValueExact();
-            }
-
-            if (type == Float.class || type == float.class) {
-                return (float) number.doubleValue();
-            }
-
-            if (type == Double.class || type == double.class) {
-                return number.doubleValue();
-            }
-
-            if (type == BigInteger.class) {
-                return number.bigIntegerValue();
-            }
-
-            if (type == BigDecimal.class) {
-                return number.bigDecimalValue();
-            }
-
-            int intValue = number.intValueExact();
-            if (type == Integer.class || type == int.class) {
-                return intValue;
-            }
-
-            if (type == Short.class || type == short.class) {
-                short shortVal = (short) intValue;
-                if (intValue != shortVal) {
-                    throw new java.lang.ArithmeticException("Overflow");
-                }
-                return shortVal;
-            }
-
-            if (type == Byte.class || type == byte.class) {
-
-                // bytes have a special handling as they are often used
-                // to transport binary. So we have to pass on the full 8 bit.
-                // TODO: ATTENTION: this is only an intermediate solution until JOHNZON-177
-                // resp https://github.com/eclipse-ee4j/jsonb-api/issues/82 is properly specced
-                if (intValue < -128 || intValue > 255) {
-                    throw new java.lang.ArithmeticException("Overflow");
-                }
-                return (byte) intValue;
-            }
+            return mapNumber(jsonValue, type);
 
         } else if (JsonString.class.isInstance(jsonValue)) {
             if (JsonString.class == type) {
@@ -613,6 +550,61 @@ public class MappingParserImpl implements MappingParser {
             } else {
                 return itemConverter.to(string);
             }
+        }
+
+        throw new MapperException("Unable to parse " + jsonValue + " to " + type);
+    }
+
+    private Object mapNumber(final JsonValue jsonValue, final Type type) {
+        if (JsonNumber.class == type) {
+            return jsonValue;
+        }
+
+        final JsonNumber number = JsonNumber.class.cast(jsonValue);
+
+        if (type == Long.class || type == long.class) {
+            return number.longValueExact();
+        }
+
+        if (type == Float.class || type == float.class) {
+            return (float) number.doubleValue();
+        }
+
+        if (type == Double.class || type == double.class || type == Object.class) {
+            return number.doubleValue();
+        }
+
+        if (type == BigInteger.class) {
+            return number.bigIntegerValue();
+        }
+
+        if (type == BigDecimal.class) {
+            return number.bigDecimalValue();
+        }
+
+        int intValue = number.intValueExact();
+        if (type == Integer.class || type == int.class) {
+            return intValue;
+        }
+
+        if (type == Short.class || type == short.class) {
+            short shortVal = (short) intValue;
+            if (intValue != shortVal) {
+                throw new ArithmeticException("Overflow");
+            }
+            return shortVal;
+        }
+
+        if (type == Byte.class || type == byte.class) {
+
+            // bytes have a special handling as they are often used
+            // to transport binary. So we have to pass on the full 8 bit.
+            // TODO: ATTENTION: this is only an intermediate solution until JOHNZON-177
+            // resp https://github.com/eclipse-ee4j/jsonb-api/issues/82 is properly specced
+            if (intValue < -128 || intValue > 255) {
+                throw new ArithmeticException("Overflow");
+            }
+            return (byte) intValue;
         }
 
         throw new MapperException("Unable to parse " + jsonValue + " to " + type);
